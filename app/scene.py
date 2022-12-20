@@ -5,13 +5,64 @@ from pygame.locals import *
 from framework.screen import screen, WIDTH, HEIGHT, tile_size
 from framework.text import Text, ScrollingText, center_text, draw_text
 
+# Event for determining which level to load
+NEXTLEVEL = pygame.USEREVENT + 1
+
+# Event for setting running=False
+STOPRUNNING = pygame.USEREVENT + 2
+
 level_files = ['level1.csv',
                'level2.csv',
                'level3.csv',]
 
+def stop_running():
+    pygame.event.post(pygame.event.Event(STOPRUNNING))
+
 def quit_game():
     pygame.quit()
     sys.exit()
+
+cursor_text = Text(">")
+cursor_height = 20
+def cursor_event_handler(event, cursor, menu_list):
+    if event.type == KEYDOWN:
+        if event.key == K_RETURN:
+            menu_list[cursor][1]()
+
+        if event.key == K_UP:
+            cursor -= 1
+            if cursor < 0:
+                cursor = len(menu_list) - 1
+
+        if event.key == K_DOWN:
+            cursor += 1
+            if cursor > len(menu_list) - 1:
+                cursor = 0
+
+    return cursor
+
+def menu_scene(title_text=None, menu_list=None, background_color='black'):
+    cursor = 0
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                quit_game()
+
+            if event.type == STOPRUNNING:
+                running = False
+
+            cursor = cursor_event_handler(event, cursor, menu_list)
+        
+        screen.fill(background_color)
+        center_text(title_text, HEIGHT//3)
+
+        for (idx, (text, _)) in enumerate(menu_list):
+            draw_text(text, WIDTH//2-20, HEIGHT//2 + idx*cursor_height)
+
+        draw_text(cursor_text, WIDTH//2-40, HEIGHT//2 + (cursor*cursor_height))
+        pygame.display.flip()
 
 clock = pygame.time.Clock()
 def main_scene():
@@ -47,54 +98,13 @@ def main_scene():
         clock.tick(5)
 
 def pause_scene():
-    running = True
+    title_text = Text("PAUSE")
+    menu_list = [(Text("CONTINUE"), lambda: stop_running()),
+                 (Text("QUIT"), lambda: quit_game()),]
 
-    pause_text = Text("PAUSE")
-    continue_text = Text("CONTINUE")
-    quit_text = Text("QUIT")
+    menu_scene(title_text, menu_list, 'black')
 
-    # Cursor for menu:
-    #
-    # > 0. CONTINUE
-    #   1. QUIT
-    #
-    cursor_text = Text(">")
-    cursor = 0
 
-    while running:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                quit_game()
-
-            if event.type == KEYDOWN:
-                if event.key == K_RETURN:
-                    # Continue
-                    if cursor == 0:
-                        running = False
-                    # Quit
-                    if cursor == 1:
-                        pygame.quit()
-                        sys.exit()
-
-                if event.key == K_UP:
-                    cursor -= 1
-                    if cursor < 0:
-                        cursor = 1
-
-                if event.key == K_DOWN:
-                    cursor += 1
-                    if cursor > 1:
-                        cursor = 0
-        
-        screen.fill('black')
-        center_text(pause_text, HEIGHT//3)
-        draw_text(continue_text, WIDTH//2-20, HEIGHT//2)
-        draw_text(quit_text, WIDTH//2-20, HEIGHT//2 + 20)
-
-        draw_text(cursor_text, WIDTH//2-40, HEIGHT//2 + (cursor*20))
-        pygame.display.flip()
-
-NEXTLEVEL = pygame.USEREVENT + 1
 def game_scene(level_idx):
     from app.player import Player
     player = pygame.sprite.GroupSingle()
@@ -211,7 +221,7 @@ def end_scene():
     main_text = Text('THE END')
     scrolling_text = ScrollingText('YOU BEAT THE GAME!')
     enter_text = Text('PRESS ENTER TO TRY AGAIN')
-    cursor = 0
+
     while running:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -238,49 +248,9 @@ def end_scene():
         clock.tick(5)
 
 def lose_scene():
-    running = True
+    title_text = Text("YOU LOSE!")
+    menu_list = [(Text("TRY AGAIN"), lambda: game_scene(0)),
+                 (Text("QUIT"), lambda: quit_game()),]
 
-    pause_text = Text("YOU LOSE!")
-    continue_text = Text("TRY AGAIN")
-    quit_text = Text("QUIT")
+    menu_scene(title_text, menu_list, 'red')
 
-    # Cursor for menu:
-    #
-    # > 0. CONTINUE
-    #   1. QUIT
-    #
-    cursor_text = Text(">")
-    cursor = 0
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                quit_game()
-
-            if event.type == KEYDOWN:
-                if event.key == K_RETURN:
-                    # Continue
-                    if cursor == 0:
-                        game_scene(0)
-                    # Quit
-                    if cursor == 1:
-                        pygame.quit()
-                        sys.exit()
-
-                if event.key == K_UP:
-                    cursor -= 1
-                    if cursor < 0:
-                        cursor = 1
-
-                if event.key == K_DOWN:
-                    cursor += 1
-                    if cursor > 1:
-                        cursor = 0
-        
-        screen.fill('red')
-        center_text(pause_text, HEIGHT//3)
-        draw_text(continue_text, WIDTH//2-20, HEIGHT//2)
-        draw_text(quit_text, WIDTH//2-20, HEIGHT//2 + 20)
-
-        draw_text(cursor_text, WIDTH//2-40, HEIGHT//2 + (cursor*20))
-        pygame.display.flip()
