@@ -1,9 +1,8 @@
 from framework.screen import screen, WIDTH, HEIGHT
 from framework.font import font_16
-from framework import color
 
 class Text:
-    def __init__(self, text='', font=font_16, color=color.white, width=None):
+    def __init__(self, text='', font=font_16, color='white', width=None):
         self.text = text
         self.font = font
         self.color = color
@@ -16,7 +15,7 @@ class Text:
 
 
 class ScrollingText:
-    def __init__(self, text='', font=font_16, color=color.white, width=None):
+    def __init__(self, text='', font=font_16, color='white', width=None):
         self.text = text
         self.font = font
         self.color = color
