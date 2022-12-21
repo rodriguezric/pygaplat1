@@ -14,13 +14,11 @@ class Text:
         return self.font.render(self.text, True, self.color)
 
 
-class ScrollingText:
+class ScrollingText(Text):
     def __init__(self, text='', font=font_16, color='white', width=None):
-        self.text = text
-        self.font = font
-        self.color = color
+        super().__init__(text, font, color, width)
+
         self.i = 0
-        self.width = width
         if width is None:
             self.width = self.font.render(self.text, True, self.color).get_rect().w
         
@@ -44,5 +42,8 @@ def center_text(text_obj, y=None):
     screen.blit(text_obj.render(), (WIDTH//2 - text_obj.width//2,y))
 
 def draw_text(text_obj, x, y):
+    '''
+    Draws a Text object to the coordinates x, y
+    '''
     screen.blit(text_obj.render(), (x, y))
 

@@ -32,6 +32,13 @@ def quit_game():
 cursor_text = Text(">")
 cursor_height = 20
 def handle_cursor_event(event, cursor, menu_list):
+    '''
+    Returns a new cursor value based on KEYDOWN event and the
+    length of the menu_list. When the user presses return, it
+    calls the function in menu_list at the cursor index. when
+    the users presses up or down, it increases or decreases
+    the cursor value.
+    '''
     if not event.type == KEYDOWN:
         return cursor
 
@@ -67,12 +74,11 @@ def menu_scene(title_text=None, menu_list=None, background_color='black'):
     running = True
     while running:
         for event in pygame.event.get():
-            handle_quit_event(event)
-
             if event.type == STOPRUNNING:
                 running = False
 
             cursor = handle_cursor_event(event, cursor, menu_list)
+            handle_quit_event(event)
         
         screen.fill(background_color)
         center_text(title_text, HEIGHT//3)
@@ -212,9 +218,9 @@ def game_scene(level_idx):
 
     while running:
         for event in pygame.event.get():
-            
-            handle_keydown_event(event)
             handle_next_level_event(event)
+            handle_keydown_event(event)
+            handle_quit_event(event)
 
         screen.fill('black')
 
@@ -257,8 +263,8 @@ def end_scene():
 
     while running:
         for event in pygame.event.get():
-            handle_quit_event(event)
             handle_keydown_event(event)
+            handle_quit_event(event)
 
         screen.fill('black')
 
