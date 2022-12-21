@@ -40,13 +40,18 @@ class Player(pygame.sprite.Sprite):
             self.horizontal_rect.left = self.rect.right
         else:
             self.horizontal_rect.right = self.rect.left
+
         self.horizontal_rect.height = self.rect.height - 2 - abs(self.movement.y)
+
         if self.movement.y > 0:
             self.horizontal_rect.top = self.rect.top + self.movement.y
         if self.movement.y < 0:
             self.horizontal_rect.bottom = self.rect.bottom + self.movement.y
             
     def update_vertical_rect(self):
+        '''
+        Update rectangle used for vertical collision detection
+        '''
         if self.movement.y > 0:
             self.vertical_rect.top = self.rect.bottom + self.movement.y
         else:
@@ -64,6 +69,9 @@ class Player(pygame.sprite.Sprite):
             self.vertical_rect.right = self.rect.right
 
     def apply_gravity(self):
+        '''
+        Increase vertical movement by gravity
+        '''
         self.movement.y += self.gravity
 
     def apply_friction(self):
@@ -84,6 +92,9 @@ class Player(pygame.sprite.Sprite):
             self.movement.x = self.speed
     
     def jump(self):
+        '''
+        Jump if the player is on a floor
+        '''
         if self.is_on_floor:
             self.movement.y = -self.jump_force
             self.update_vertical_rect()
