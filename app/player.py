@@ -129,7 +129,6 @@ class Player(pygame.sprite.Sprite):
 
             if self.movement.y <= self.gravity:
                 self.state = PlayerState.STANDING
-        print(self.state, self.movement)
     
     def jump(self):
         '''
