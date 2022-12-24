@@ -181,7 +181,6 @@ def game_scene(level_idx):
     def handle_next_level_event(event):
         if not event.type == NEXTLEVEL:
             return
-
         if level_idx == len(level_files)-1:
             # we beat the game
             end_scene() 
@@ -190,26 +189,27 @@ def game_scene(level_idx):
             game_scene(level_idx+1)
 
     def handle_horizontal_collision(sprite):
-        if player.sprite.movement.x != 0:
-            if sprite.rect.colliderect(player.sprite.horizontal_rect):
-                if player.sprite.movement.x > 0:
-                    player.sprite.rect.right = sprite.rect.left
-                if player.sprite.movement.x < 0:
-                    player.sprite.rect.left = sprite.rect.right
-                player.sprite.movement.x = 0
+        if player.sprite.movement.x == 0:
+            return
+        if not sprite.rect.colliderect(player.sprite.horizontal_rect):
+            return 
+        if player.sprite.movement.x > 0:
+            player.sprite.rect.right = sprite.rect.left
+        if player.sprite.movement.x < 0:
+            player.sprite.rect.left = sprite.rect.right
+        player.sprite.movement.x = 0
 
     def handle_vertical_collision(sprite):
-        if abs(player.sprite.movement.y) > player.sprite.gravity:
-            player.sprite.is_on_floor = False
-
-        if player.sprite.movement.y != 0:
-            if sprite.rect.colliderect(player.sprite.vertical_rect):
-                if player.sprite.movement.y > 0:
-                    player.sprite.rect.bottom = sprite.rect.top
-                    player.sprite.is_on_floor = True
-                else:
-                    player.sprite.rect.top = sprite.rect.bottom
-                player.sprite.movement.y = 0
+        if player.sprite.movement.y == 0:
+            return
+        if not sprite.rect.colliderect(player.sprite.vertical_rect):
+            return
+        if player.sprite.movement.y > 0:
+            player.sprite.rect.bottom = sprite.rect.top
+            player.sprite.is_on_floor = True
+        else:
+            player.sprite.rect.top = sprite.rect.bottom
+        player.sprite.movement.y = 0
 
     def handle_tile_collisions():
         for sprite in tiles.sprites():
@@ -227,6 +227,9 @@ def game_scene(level_idx):
         tiles.draw(screen)
         hazzards.draw(screen)
         goals.draw(screen)
+
+        if abs(player.sprite.movement.y) > player.sprite.gravity:
+            player.sprite.is_on_floor = False
 
         handle_tile_collisions()
                 
