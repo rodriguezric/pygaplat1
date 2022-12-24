@@ -1,5 +1,6 @@
 import pygame
 from framework.screen import tile_size
+from app.state import PlayerState
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -17,7 +18,7 @@ class Player(pygame.sprite.Sprite):
         self.movement = pygame.math.Vector2()
         self.gravity = 0.5
         self.friction = 0.5
-        self.is_on_floor = False
+        self.state = PlayerState.STANDING
 
         # rectangles for detecting collision
         self.horizontal_rect = self.rect.copy()
@@ -59,7 +60,7 @@ class Player(pygame.sprite.Sprite):
 
         self.vertical_rect.centerx = self.rect.centerx
 
-        if self.is_on_floor:
+        if self.state in (PlayerState.STANDING, PlayerState.WALKING):
             self.vertical_rect.width = self.rect.width - abs(self.movement.x)
 
         if self.movement.x > 0:
@@ -82,22 +83,60 @@ class Player(pygame.sprite.Sprite):
         '''
         self.movement.x *= self.friction // 1
 
-    def key_inputs(self):
-        keys = pygame.key.get_pressed()
-
+    def handle_horizontal_keys(self, keys):
         if keys[pygame.K_LEFT]:
             self.movement.x = -self.speed
         
         if keys[pygame.K_RIGHT]:
             self.movement.x = self.speed
+
+    def handle_jump_key(self, keys):
+        if keys[pygame.K_SPACE]:
+            self.jump()
+            self.state = PlayerState.JUMPING
+
+    def key_inputs(self):
+        keys = pygame.key.get_pressed()
+
+        if self.state == PlayerState.STANDING:
+            self.handle_horizontal_keys(keys)
+            self.handle_jump_key(keys)
+            
+            if self.movement.y > self.gravity:
+                self.state = PlayerState.FALLING
+
+        if self.state == PlayerState.WALKING:
+            self.handle_horizontal_keys(keys)
+            self.handle_jump_key(keys)
+            
+            if self.movement.x == 0:
+                self.state = PlayerState.WALKING
+
+            if self.movement.y < 0:
+                self.state = PlayerState.JUMPING
+
+            if self.movement.y > self.gravity:
+                self.state = PlayerState.FALLING
+
+        if self.state == PlayerState.JUMPING:
+            self.handle_horizontal_keys(keys)
+
+            if self.movement.y > self.gravity:
+                self.state = PlayerState.FALLING
+
+        if self.state == PlayerState.FALLING:
+            self.handle_horizontal_keys(keys)
+
+            if self.movement.y <= self.gravity:
+                self.state = PlayerState.STANDING
+        print(self.state, self.movement)
     
     def jump(self):
         '''
         Jump if the player is on a floor
         '''
-        if self.is_on_floor:
-            self.movement.y = -self.jump_force
-            self.update_vertical_rect()
+        self.movement.y = -self.jump_force
+        self.update_vertical_rect()
     
     def update(self):
         self.apply_gravity()

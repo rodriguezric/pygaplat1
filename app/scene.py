@@ -175,8 +175,6 @@ def game_scene(level_idx):
             return
         if event.key == K_ESCAPE:
             pause_scene()
-        if event.key == K_SPACE:
-            player.sprite.jump()
     
     def handle_next_level_event(event):
         if not event.type == NEXTLEVEL:
@@ -206,7 +204,6 @@ def game_scene(level_idx):
             return
         if player.sprite.movement.y > 0:
             player.sprite.rect.bottom = sprite.rect.top
-            player.sprite.is_on_floor = True
         else:
             player.sprite.rect.top = sprite.rect.bottom
         player.sprite.movement.y = 0
@@ -227,9 +224,6 @@ def game_scene(level_idx):
         tiles.draw(screen)
         hazzards.draw(screen)
         goals.draw(screen)
-
-        if abs(player.sprite.movement.y) > player.sprite.gravity:
-            player.sprite.is_on_floor = False
 
         handle_tile_collisions()
                 
