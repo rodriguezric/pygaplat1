@@ -84,6 +84,11 @@ class Player(pygame.sprite.Sprite):
         self.movement.x *= self.friction // 1
 
     def handle_horizontal_keys(self, keys):
+        '''
+        Moves the player left and right. At the moment this 
+        is trivial, but we could have separate methods for 
+        working with different states of the player.
+        '''
         if keys[pygame.K_LEFT]:
             self.movement.x = -self.speed
         
@@ -91,57 +96,66 @@ class Player(pygame.sprite.Sprite):
             self.movement.x = self.speed
 
     def handle_jump_key(self, keys):
+        '''
+        Moves the player vertically. We do make a special 
+        call to update the vertical collision rectangle.
+        '''
         if keys[pygame.K_SPACE]:
-            self.jump()
+            self.movement.y = -self.jump_force
+            # May want to decouple this state change 
+            # from the key handler.
             self.state = PlayerState.JUMPING
+            self.update_vertical_rect()
+
+    def handle_standing_state(self, keys):
+        self.handle_horizontal_keys(keys)
+        self.handle_jump_key(keys)
+        
+        if self.movement.y > self.gravity:
+            self.state = PlayerState.FALLING
+
+    def handle_walking_state(self, keys):
+        self.handle_horizontal_keys(keys)
+        self.handle_jump_key(keys)
+        
+        if self.movement.x == 0:
+            self.state = PlayerState.WALKING
+
+        if self.movement.y < 0:
+            self.state = PlayerState.JUMPING
+
+        if self.movement.y > self.gravity:
+            self.state = PlayerState.FALLING
+
+    def handle_jumping_state(self, keys):
+        self.handle_horizontal_keys(keys)
+
+        if self.movement.y > self.gravity:
+            self.state = PlayerState.FALLING
+
+    def handle_falling_state(self, keys):
+        self.handle_horizontal_keys(keys)
+
+        if self.movement.y <= self.gravity:
+            self.state = PlayerState.STANDING
 
     def key_inputs(self):
         keys = pygame.key.get_pressed()
-
-        if self.state == PlayerState.STANDING:
-            self.handle_horizontal_keys(keys)
-            self.handle_jump_key(keys)
-            
-            if self.movement.y > self.gravity:
-                self.state = PlayerState.FALLING
-
-        if self.state == PlayerState.WALKING:
-            self.handle_horizontal_keys(keys)
-            self.handle_jump_key(keys)
-            
-            if self.movement.x == 0:
-                self.state = PlayerState.WALKING
-
-            if self.movement.y < 0:
-                self.state = PlayerState.JUMPING
-
-            if self.movement.y > self.gravity:
-                self.state = PlayerState.FALLING
-
-        if self.state == PlayerState.JUMPING:
-            self.handle_horizontal_keys(keys)
-
-            if self.movement.y > self.gravity:
-                self.state = PlayerState.FALLING
-
-        if self.state == PlayerState.FALLING:
-            self.handle_horizontal_keys(keys)
-
-            if self.movement.y <= self.gravity:
-                self.state = PlayerState.STANDING
-    
-    def jump(self):
-        '''
-        Jump if the player is on a floor
-        '''
-        self.movement.y = -self.jump_force
-        self.update_vertical_rect()
+        { # Register states to handler methods
+            PlayerState.STANDING: self.handle_standing_state,
+            PlayerState.WALKING: self.handle_walking_state,
+            PlayerState.JUMPING: self.handle_jumping_state,
+            PlayerState.FALLING: self.handle_falling_state,
+        }.get(self.state)(keys)
     
     def update(self):
+        '''
+        Update the player every clock tick
+        '''
         self.apply_gravity()
         self.apply_friction()
 
-        # handles inputs except jumping
+        # handles inputs based on player state
         self.key_inputs()
 
         # detect collisions before moving
