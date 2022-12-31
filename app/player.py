@@ -3,6 +3,10 @@ from framework.screen import tile_size
 from app.state import PlayerState
 
 class Player(pygame.sprite.Sprite):
+    speed = 4
+    jump_force = 8
+    gravity = 0.5
+    friction = 0.5
     def __init__(self, pos):
         super().__init__()
 
@@ -13,11 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.image.fill('green')
 
         # attributes
-        self.speed = 4
-        self.jump_force = 8
         self.movement = pygame.math.Vector2()
-        self.gravity = 0.5
-        self.friction = 0.5
         self.state = PlayerState.STANDING
 
         # rectangles for detecting collision

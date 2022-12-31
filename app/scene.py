@@ -11,9 +11,9 @@ NEXTLEVEL = pygame.USEREVENT + 1
 # Event for setting running=False
 STOPRUNNING = pygame.USEREVENT + 2
 
-level_files = ['level1.csv',
-               'level2.csv',
-               'level3.csv',]
+from os import walk
+_, __, level_files = list(walk('levels'))[0]
+level_files = [f'levels/{x}' for x in sorted(level_files)]
 
 def stop_running():
     '''
@@ -130,43 +130,50 @@ def pause_scene():
 
     menu_scene(title_text, menu_list, 'black')
 
-
 def game_scene(level_idx):
     from app.player import Player
     player = pygame.sprite.GroupSingle()
     player.add(Player((50,50)))
 
 
-    from app.tile import create_white_tile, create_red_tile, create_blue_tile
+    from app.tile import (create_white_tile, create_red_tile, 
+                          create_blue_tile, DialogTile)
     tiles = pygame.sprite.Group()
     hazzards = pygame.sprite.Group()
     goals = pygame.sprite.Group()
+    dialogs = pygame.sprite.Group()
+    collided_dialogs = []
 
     import csv
-    level = []
     with open(level_files[level_idx]) as f:
-        level = list(csv.reader(f))
+        level = ((x, y, v) for y, _ in enumerate(tuple(csv.reader(f))) 
+                           for x, v in enumerate(_))
 
     tile_dict = {'1': create_white_tile,}
     hazzard_dict = {'2': create_red_tile,}
     goal_dict = {'D': create_blue_tile,}
 
 
-    for row_idx, row in enumerate(level):
-        for col_idx, tile_key in enumerate(row):
-            coordinates = (tile_size * col_idx, tile_size * row_idx)
-
-            tile_fn = tile_dict.get(tile_key)
-            if tile_fn:
-                tiles.add(tile_fn(coordinates))
-
-            hazzard_fn = hazzard_dict.get(tile_key)
-            if hazzard_fn:
-                hazzards.add(hazzard_fn(coordinates))
+    for x, y, key in level:
+        coordinates = (tile_size * x, tile_size * y)
         
-            goal_fn = goal_dict.get(tile_key)
-            if goal_fn:
-                goals.add(goal_fn(coordinates))
+        tile_fn = tile_dict.get(key)
+        if tile_fn:
+            tiles.add(tile_fn(coordinates))
+        
+        hazzard_fn = hazzard_dict.get(key)
+        if hazzard_fn:
+            hazzards.add(hazzard_fn(coordinates))
+         
+        goal_fn = goal_dict.get(key)
+        if goal_fn:
+            goals.add(goal_fn(coordinates))
+        
+        if key.startswith('E'):
+            _, text_id = key.split(':')
+            dialogs.add(DialogTile(color='yellow', 
+                                   pos=coordinates,
+                                   text_id=text_id))
     
     running = True
 
@@ -175,11 +182,16 @@ def game_scene(level_idx):
             return
         if event.key == K_ESCAPE:
             pause_scene()
+        if event.key == K_RETURN:
+            if collided_dialogs:
+                with open(f'texts/{collided_dialogs[0].text_id}.txt') as f:
+                    lines = [line.strip() for line in f.readlines()]
+                    show_dialogue(lines)
     
     def handle_next_level_event(event):
         if not event.type == NEXTLEVEL:
             return
-        if level_idx == len(level_files)-1:
+        if level_idx >= len(level_files)-1:
             # we beat the game
             end_scene() 
         else:
@@ -208,11 +220,18 @@ def game_scene(level_idx):
             player.sprite.rect.top = sprite.rect.bottom
         player.sprite.movement.y = 0
 
+    def handle_drawing():
+        tiles.draw(screen)
+        hazzards.draw(screen)
+        goals.draw(screen)
+        dialogs.draw(screen)
+
     def handle_tile_collisions():
         for sprite in tiles.sprites():
             handle_horizontal_collision(sprite)
             handle_vertical_collision(sprite)
 
+    time_past = Text('')
     while running:
         for event in pygame.event.get():
             handle_next_level_event(event)
@@ -221,10 +240,7 @@ def game_scene(level_idx):
 
         screen.fill('black')
 
-        tiles.draw(screen)
-        hazzards.draw(screen)
-        goals.draw(screen)
-
+        handle_drawing()
         handle_tile_collisions()
                 
         player.draw(screen)
@@ -235,6 +251,8 @@ def game_scene(level_idx):
 
         if pygame.sprite.spritecollide(player.sprite, goals, False):
             pygame.event.post(pygame.event.Event(NEXTLEVEL))
+
+        collided_dialogs = pygame.sprite.spritecollide(player.sprite, dialogs, False)
 
         pygame.display.flip()
         clock.tick(60)
@@ -281,3 +299,43 @@ def lose_scene():
 
     menu_scene(title_text, menu_list, 'red')
 
+def chunk(L: list, size: int):
+    return [L[i:i+size] for i in range(0, len(L), size)]
+    
+def show_dialogue(lines: list):
+    from framework.font import font_16
+    scrolling_dialog = chunk([ScrollingText(x, font=font_16) for x in lines], 6)
+    chunk_idx = 0 
+    text_idx = 0 
+    surf = pygame.Surface((WIDTH, tile_size*4))
+    rect = surf.get_rect(midbottom=screen.get_rect().midbottom)
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == K_RETURN:
+                if not scrolling_dialog[chunk_idx][-1].finished:
+                    for x in scrolling_dialog[chunk_idx]: 
+                        x.fill() 
+                else:
+                    chunk_idx += 1
+                    text_idx = 0
+
+        surf.fill('black')
+        screen.blit(surf, rect)
+
+        if chunk_idx == len(scrolling_dialog):
+            break
+
+        if not scrolling_dialog[chunk_idx][text_idx].finished:
+            scrolling_dialog[chunk_idx][text_idx].inc()
+        else:
+            if text_idx < len(scrolling_dialog[chunk_idx]) - 1:
+                text_idx += 1
+
+        for idx, scrolling_text in enumerate(scrolling_dialog[chunk_idx]):
+            draw_text(scrolling_text, x=8, y=8 + idx * (16+4) + rect.top)
+
+
+        pygame.display.update()
+        clock.tick(5)
