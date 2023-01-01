@@ -132,8 +132,12 @@ def pause_scene():
 
 def game_scene(level_idx):
     from app.player import Player
+    from app.enemy import Enemy
+
     player = pygame.sprite.GroupSingle()
     player.add(Player((50,50)))
+
+    enemies = pygame.sprite.Group()
 
     from app.tile import (create_white_tile, create_red_tile, 
                           create_blue_tile, DialogTile)
@@ -154,25 +158,28 @@ def game_scene(level_idx):
 
 
     for x, y, key in level:
-        coordinates = (tile_size * x, tile_size * y)
+        pos = (tile_size * x, tile_size * y)
         
         tile_fn = tile_dict.get(key)
         if tile_fn:
-            tiles.add(tile_fn(coordinates))
+            tiles.add(tile_fn(pos=pos))
         
         hazzard_fn = hazzard_dict.get(key)
         if hazzard_fn:
-            hazzards.add(hazzard_fn(coordinates))
+            hazzards.add(hazzard_fn(pos=pos))
          
         goal_fn = goal_dict.get(key)
         if goal_fn:
-            goals.add(goal_fn(coordinates))
+            goals.add(goal_fn(pos=pos))
         
         if key.startswith('E'):
             _, text_id = key.split(':')
-            dialogs.add(DialogTile(color='yellow', 
-                                   pos=coordinates,
-                                   text_id=text_id))
+            dialogs.add(DialogTile(text_id=text_id,
+                                   color='yellow', 
+                                   pos=pos,))
+
+        if key == 'M':
+            enemies.add(Enemy(pos=pos))
     
     running = True
 
@@ -244,6 +251,9 @@ def game_scene(level_idx):
                 
         player.draw(screen)
         player.update()
+
+        enemies.draw(screen)
+        enemies.update()
 
         if pygame.sprite.spritecollide(player.sprite, hazzards, False):
             lose_scene()
