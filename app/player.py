@@ -1,6 +1,6 @@
 import pygame
 from framework.screen import tile_size
-from app.state import PlayerState
+from app.state import ActorState
 
 class Player(pygame.sprite.Sprite):
     speed = 4
@@ -18,7 +18,7 @@ class Player(pygame.sprite.Sprite):
 
         # attributes
         self.movement = pygame.math.Vector2()
-        self.state = PlayerState.STANDING
+        self.state = ActorState.STANDING
 
         # rectangles for detecting collision
         self.horizontal_rect = self.rect.copy()
@@ -60,7 +60,7 @@ class Player(pygame.sprite.Sprite):
 
         self.vertical_rect.centerx = self.rect.centerx
 
-        if self.state in (PlayerState.STANDING, PlayerState.WALKING):
+        if self.state in (ActorState.STANDING, ActorState.WALKING):
             self.vertical_rect.width = self.rect.width - abs(self.movement.x)
 
         if self.movement.x > 0:
@@ -104,7 +104,7 @@ class Player(pygame.sprite.Sprite):
             self.movement.y = -self.jump_force
             # May want to decouple this state change 
             # from the key handler.
-            self.state = PlayerState.JUMPING
+            self.state = ActorState.JUMPING
             self.update_vertical_rect()
 
     def handle_standing_state(self, keys):
@@ -112,40 +112,40 @@ class Player(pygame.sprite.Sprite):
         self.handle_jump_key(keys)
         
         if self.movement.y > self.gravity:
-            self.state = PlayerState.FALLING
+            self.state = ActorState.FALLING
 
     def handle_walking_state(self, keys):
         self.handle_horizontal_keys(keys)
         self.handle_jump_key(keys)
         
         if self.movement.x == 0:
-            self.state = PlayerState.WALKING
+            self.state = ActorState.WALKING
 
         if self.movement.y < 0:
-            self.state = PlayerState.JUMPING
+            self.state = ActorState.JUMPING
 
         if self.movement.y > self.gravity:
-            self.state = PlayerState.FALLING
+            self.state = ActorState.FALLING
 
     def handle_jumping_state(self, keys):
         self.handle_horizontal_keys(keys)
 
         if self.movement.y > self.gravity:
-            self.state = PlayerState.FALLING
+            self.state = ActorState.FALLING
 
     def handle_falling_state(self, keys):
         self.handle_horizontal_keys(keys)
 
         if self.movement.y <= self.gravity:
-            self.state = PlayerState.STANDING
+            self.state = ActorState.STANDING
 
     def key_inputs(self):
         keys = pygame.key.get_pressed()
         { # Register states to handler methods
-            PlayerState.STANDING: self.handle_standing_state,
-            PlayerState.WALKING: self.handle_walking_state,
-            PlayerState.JUMPING: self.handle_jumping_state,
-            PlayerState.FALLING: self.handle_falling_state,
+            ActorState.STANDING: self.handle_standing_state,
+            ActorState.WALKING: self.handle_walking_state,
+            ActorState.JUMPING: self.handle_jumping_state,
+            ActorState.FALLING: self.handle_falling_state,
         }.get(self.state)(keys)
     
     def update(self):

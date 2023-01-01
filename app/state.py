@@ -1,4 +1,4 @@
-class PlayerState:
+class ActorState:
     STANDING = 0
     WALKING = 1
     JUMPING = 2
