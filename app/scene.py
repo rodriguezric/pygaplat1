@@ -135,7 +135,6 @@ def game_scene(level_idx):
     player = pygame.sprite.GroupSingle()
     player.add(Player((50,50)))
 
-
     from app.tile import (create_white_tile, create_red_tile, 
                           create_blue_tile, DialogTile)
     tiles = pygame.sprite.Group()
