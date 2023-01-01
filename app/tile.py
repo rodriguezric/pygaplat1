@@ -12,15 +12,8 @@ class DialogTile(Tile):
         super().__init__(pos, color)
         self.text_id = text_id
 
-def create_white_tile(pos):
-    return Tile(pos, color='white')
-
-def create_green_tile(pos):
-    return Tile(pos, color='green')
-
-def create_blue_tile(pos):
-    return Tile(pos, color='blue')
-
-def create_red_tile(pos):
-    return Tile(pos, color='red')
-
+def create_colored_tile(color): 
+    '''
+    Used for generating colored tiles from level data
+    '''
+    return lambda pos: Tile(pos=pos, color=color)

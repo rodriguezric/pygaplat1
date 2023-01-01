@@ -14,7 +14,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=pos)
 
         # graphics
-        self.image.fill('orange')
+        self.image.fill('red')
 
         # attributes
         self.movement = pygame.math.Vector2()

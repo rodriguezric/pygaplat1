@@ -141,8 +141,7 @@ def game_scene(level_idx):
 
     enemies = pygame.sprite.Group()
 
-    from app.tile import (create_white_tile, create_red_tile, 
-                          create_blue_tile, DialogTile)
+    from app.tile import Tile, DialogTile, create_colored_tile
     tiles = pygame.sprite.Group()
     hazzards = pygame.sprite.Group()
     goals = pygame.sprite.Group()
@@ -154,9 +153,10 @@ def game_scene(level_idx):
         level = ((x, y, v) for y, _ in enumerate(tuple(csv.reader(f))) 
                            for x, v in enumerate(_))
 
-    tile_dict = {'1': create_white_tile,}
-    hazzard_dict = {'2': create_red_tile,}
-    goal_dict = {'D': create_blue_tile,}
+
+    tile_dict = {'1': create_colored_tile('white'),}
+    hazzard_dict = {'2': create_colored_tile('firebrick'),}
+    goal_dict = {'D': create_colored_tile('blue'),}
 
 
     for x, y, key in level:
@@ -262,6 +262,9 @@ def game_scene(level_idx):
         enemies.update()
 
         if pygame.sprite.spritecollide(player.sprite, hazzards, False):
+            lose_scene()
+
+        if pygame.sprite.spritecollide(player.sprite, enemies, False):
             lose_scene()
 
         if pygame.sprite.spritecollide(player.sprite, goals, False):
