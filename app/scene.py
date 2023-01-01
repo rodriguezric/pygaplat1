@@ -1,5 +1,7 @@
 import pygame
 import sys
+
+from pygame.sprite import Sprite
 from pygame.locals import *
 
 from framework.screen import screen, WIDTH, HEIGHT, tile_size
@@ -204,27 +206,27 @@ def game_scene(level_idx):
             # next level
             game_scene(level_idx+1)
 
-    def handle_horizontal_collision(sprite):
-        if player.sprite.movement.x == 0:
+    def handle_horizontal_collision(source: Sprite, target: Sprite):
+        if source.movement.x == 0:
             return
-        if not sprite.rect.colliderect(player.sprite.horizontal_rect):
+        if not target.rect.colliderect(source.horizontal_rect):
             return 
-        if player.sprite.movement.x > 0:
-            player.sprite.rect.right = sprite.rect.left
-        if player.sprite.movement.x < 0:
-            player.sprite.rect.left = sprite.rect.right
-        player.sprite.movement.x = 0
+        if source.movement.x > 0:
+            source.rect.right = target.rect.left
+        if source.movement.x < 0:
+            source.rect.left = target.rect.right
+        source.movement.x = 0
 
-    def handle_vertical_collision(sprite):
-        if player.sprite.movement.y == 0:
+    def handle_vertical_collision(source: Sprite, target: Sprite):
+        if source.movement.y == 0:
             return
-        if not sprite.rect.colliderect(player.sprite.vertical_rect):
+        if not target.rect.colliderect(source.vertical_rect):
             return
-        if player.sprite.movement.y > 0:
-            player.sprite.rect.bottom = sprite.rect.top
+        if source.movement.y > 0:
+            source.rect.bottom = target.rect.top
         else:
-            player.sprite.rect.top = sprite.rect.bottom
-        player.sprite.movement.y = 0
+            source.rect.top = target.rect.bottom
+        source.movement.y = 0
 
     def handle_drawing():
         tiles.draw(screen)
@@ -233,9 +235,13 @@ def game_scene(level_idx):
         dialogs.draw(screen)
 
     def handle_tile_collisions():
-        for sprite in tiles.sprites():
-            handle_horizontal_collision(sprite)
-            handle_vertical_collision(sprite)
+        for tile_sprite in tiles.sprites():
+            handle_horizontal_collision(source=player.sprite, target=tile_sprite)
+            handle_vertical_collision(source=player.sprite, target=tile_sprite)
+
+            for enemy_sprite in enemies.sprites():
+                handle_horizontal_collision(source=enemy_sprite, target=tile_sprite)
+                handle_vertical_collision(source=enemy_sprite, target=tile_sprite)
 
     time_past = Text('')
     while running:
