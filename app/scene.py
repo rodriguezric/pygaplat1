@@ -135,12 +135,17 @@ def pause_scene():
 def game_scene(level_idx):
     from app.player import Player
     from app.enemy import Enemy
+    from app.projectile import Projectile
 
+    # Player sprites
     player = pygame.sprite.GroupSingle()
     player.add(Player((50,50)))
+    player_projectiles = pygame.sprite.Group()
 
+    # Enemy sprites
     enemies = pygame.sprite.Group()
 
+    # Tile sprites
     from app.tile import Tile, DialogTile, create_colored_tile
     tiles = pygame.sprite.Group()
     hazzards = pygame.sprite.Group()
@@ -153,11 +158,9 @@ def game_scene(level_idx):
         level = ((x, y, v) for y, _ in enumerate(tuple(csv.reader(f))) 
                            for x, v in enumerate(_))
 
-
     tile_dict = {'1': create_colored_tile('white'),}
     hazzard_dict = {'2': create_colored_tile('firebrick'),}
     goal_dict = {'D': create_colored_tile('blue'),}
-
 
     for x, y, key in level:
         pos = (tile_size * x, tile_size * y)
@@ -190,6 +193,9 @@ def game_scene(level_idx):
             return
         if event.key == K_ESCAPE:
             pause_scene()
+        if event.key == K_LSHIFT:
+            player_projectiles.add(Projectile(pos=player.sprite.rect.center, 
+                                              direction=player.sprite.direction))
         if event.key == K_RETURN:
             if collided_dialogs:
                 with open(f'texts/{collided_dialogs[0].text_id}.txt') as f:
@@ -257,9 +263,12 @@ def game_scene(level_idx):
                 
         player.draw(screen)
         player.update()
+        player_projectiles.draw(screen)
+        player_projectiles.update()
 
         enemies.draw(screen)
         enemies.update()
+
 
         if pygame.sprite.spritecollide(player.sprite, hazzards, False):
             lose_scene()
