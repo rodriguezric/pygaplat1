@@ -23,7 +23,6 @@ class Player(pygame.sprite.Sprite,
         self.init_state_attributes()
         self.init_collision_rects()
 
-        # new attribute: direction
         self.direction = Direction.LEFT
 
     def handle_horizontal_keys(self, keys):
@@ -52,6 +51,11 @@ class Player(pygame.sprite.Sprite,
             # from the key handler.
             self.state = ActorState.JUMPING
             self.update_vertical_rect()
+
+    @property
+    def weapon_pos(self):
+        return self.rect.midright if self.direction == Direction.RIGHT else \
+               self.rect.midleft
     
     def update(self):
         '''
