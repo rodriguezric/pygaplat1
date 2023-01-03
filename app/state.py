@@ -4,3 +4,7 @@ class ActorState:
     JUMPING = 2
     FALLING = 3
 
+
+class Direction:
+    LEFT = 1
+    RIGHT = 2

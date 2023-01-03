@@ -1,19 +1,10 @@
 import pygame
 from framework.screen import tile_size
-from app.state import ActorState
+from app.state import ActorState, Direction
 
 from app.mixins import (ActorStateMixin, 
                         CollisionRectMixin,
                         PhysicsMixin,)
-
-class Direction:
-    '''
-    Class for storing the direction the player is facing
-
-    Todo: Refactor for reuse with enemies and others
-    '''
-    LEFT = 1
-    RIGHT = 2
 
 class Player(pygame.sprite.Sprite,
              ActorStateMixin,
@@ -32,8 +23,8 @@ class Player(pygame.sprite.Sprite,
         self.init_state_attributes()
         self.init_collision_rects()
 
-        # new attribute: facing
-        self.facing = Direction.LEFT
+        # new attribute: direction
+        self.direction = Direction.LEFT
 
     def handle_horizontal_keys(self, keys):
         '''
@@ -42,11 +33,11 @@ class Player(pygame.sprite.Sprite,
         working with different states of the player.
         '''
         if keys[pygame.K_LEFT]:
-            self.facing = Direction.LEFT
+            self.direction = Direction.LEFT
             self.movement.x = -self.speed
         
         if keys[pygame.K_RIGHT]:
-            self.facing = Direction.RIGHT
+            self.direction = Direction.RIGHT
             self.movement.x = self.speed
 
     def handle_jump_key(self, keys):
