@@ -6,6 +6,15 @@ from app.mixins import (ActorStateMixin,
                         CollisionRectMixin,
                         PhysicsMixin,)
 
+class Direction:
+    '''
+    Class for storing the direction the player is facing
+
+    Todo: Refactor for reuse with enemies and others
+    '''
+    LEFT = 1
+    RIGHT = 2
+
 class Player(pygame.sprite.Sprite,
              ActorStateMixin,
              CollisionRectMixin,
@@ -23,6 +32,9 @@ class Player(pygame.sprite.Sprite,
         self.init_state_attributes()
         self.init_collision_rects()
 
+        # new attribute: facing
+        self.facing = Direction.LEFT
+
     def handle_horizontal_keys(self, keys):
         '''
         Moves the player left and right. At the moment this 
@@ -30,9 +42,11 @@ class Player(pygame.sprite.Sprite,
         working with different states of the player.
         '''
         if keys[pygame.K_LEFT]:
+            self.facing = Direction.LEFT
             self.movement.x = -self.speed
         
         if keys[pygame.K_RIGHT]:
+            self.facing = Direction.RIGHT
             self.movement.x = self.speed
 
     def handle_jump_key(self, keys):
