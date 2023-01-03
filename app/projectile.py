@@ -15,8 +15,8 @@ class Projectile(pygame.sprite.Sprite):
 
         # attributes
         self.frame = 0
-        self.speed = 2
-        self.life = 3
+        self.speed = 6
+        self.life = 1
 
     def move(self):
         '''

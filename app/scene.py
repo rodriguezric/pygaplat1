@@ -194,7 +194,7 @@ def game_scene(level_idx):
         if event.key == K_ESCAPE:
             pause_scene()
         if event.key == K_LSHIFT:
-            player_projectiles.add(Projectile(pos=player.sprite.rect.center, 
+            player_projectiles.add(Projectile(pos=player.sprite.weapon_pos, 
                                               direction=player.sprite.direction))
         if event.key == K_RETURN:
             if collided_dialogs:
@@ -280,6 +280,20 @@ def game_scene(level_idx):
             pygame.event.post(pygame.event.Event(NEXTLEVEL))
 
         collided_dialogs = pygame.sprite.spritecollide(player.sprite, dialogs, False)
+
+        projectile_collisions = pygame.sprite.groupcollide(
+            player_projectiles, 
+            enemies, 
+            False, 
+            False,
+        )
+
+        for projectile in projectile_collisions.keys():
+            projectile.kill()
+
+        for collided_enemies in projectile_collisions.values():
+            for enemy in collided_enemies:
+                enemy.kill()
 
         pygame.display.flip()
         clock.tick(60)
