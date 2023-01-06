@@ -6,7 +6,7 @@ from app.mixins import (ActorStateMixin,
                         CollisionRectMixin,
                         PhysicsMixin,)
 
-from app.behavior import pacing_behavior
+from app.behavior import pacing_behavior, pacing_jumping_behavior
 
 class Enemy(pygame.sprite.Sprite,
              ActorStateMixin,
@@ -28,7 +28,7 @@ class Enemy(pygame.sprite.Sprite,
 
         self.speed = 2
         self.behavior = None
-        self.behavior_cycle = pacing_behavior
+        self.behavior_cycle = pacing_jumping_behavior
         self.behavior_frames = 0
         self.behavior_rate = 1
 

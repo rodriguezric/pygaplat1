@@ -146,12 +146,14 @@ def game_scene(level_idx):
     enemies = pygame.sprite.Group()
 
     # Tile sprites
-    from app.tile import Tile, DialogTile, create_colored_tile
+    from app.tile import Tile, DialogTile, MovingTile, create_colored_tile
     tiles = pygame.sprite.Group()
     hazzards = pygame.sprite.Group()
     goals = pygame.sprite.Group()
     dialogs = pygame.sprite.Group()
     collided_dialogs = []
+
+    tiles.add(MovingTile((250, 350), 'green'))
 
     import csv
     with open(level_files[level_idx]) as f:
@@ -260,6 +262,8 @@ def game_scene(level_idx):
 
         handle_drawing()
         handle_tile_collisions()
+
+        tiles.update()
                 
         player.draw(screen)
         player.update()
@@ -268,7 +272,6 @@ def game_scene(level_idx):
 
         enemies.draw(screen)
         enemies.update()
-
 
         if pygame.sprite.spritecollide(player.sprite, hazzards, False):
             lose_scene()

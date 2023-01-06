@@ -44,7 +44,7 @@ class Player(pygame.sprite.Sprite,
         Moves the player vertically. We do make a special 
         call to update the vertical collision rectangle.
         '''
-        illegal_states = (ActorState.JUMPING, ActorState.FALLING)
+        illegal_states = {ActorState.JUMPING, ActorState.FALLING}
         if keys[pygame.K_SPACE] and self.state not in illegal_states:
             self.movement.y = -self.jump_force
             # May want to decouple this state change 
