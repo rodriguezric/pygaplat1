@@ -153,8 +153,6 @@ def game_scene(level_idx):
     dialogs = pygame.sprite.Group()
     collided_dialogs = []
 
-    tiles.add(MovingTile((250, 350), 'green'))
-
     import csv
     with open(level_files[level_idx]) as f:
         level = ((x, y, v) for y, _ in enumerate(tuple(csv.reader(f))) 
