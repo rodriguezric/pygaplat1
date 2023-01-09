@@ -46,21 +46,30 @@ def jump_right(self):
     jump(self)
 
 # Behavior cycles
-pacing_behavior = cycle([stand, 
-                         move_left, 
-                         stand, 
-                         move_right,])
+def pacing_behavior():
+    return cycle([
+        stand, 
+        move_left, 
+        stand, 
+        move_right,
+    ])
 
-pacing_jumping_behavior = cycle([stand,
-                                 jump_left,
-                                 stand,
-                                 jump_right,])
+def pacing_jumping_behavior():
+    return cycle([
+        stand,
+        jump_left,
+        stand,
+        jump_right,
+    ])
 
-up_down_left_right_behavior = cycle([freeze,
-                                     move_up,
-                                     freeze,
-                                     move_down,
-                                     freeze,
-                                     move_left,
-                                     freeze,
-                                     move_right,])
+def up_down_left_right_behavior():
+    return cycle([
+        freeze,
+        move_up,
+        freeze,
+        move_down,
+        freeze,
+        move_left,
+        freeze,
+        move_right,
+    ])
