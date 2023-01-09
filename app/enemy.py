@@ -28,7 +28,7 @@ class Enemy(pygame.sprite.Sprite,
 
         self.speed = 2
         self.behavior = None
-        self.behavior_cycle = pacing_jumping_behavior
+        self.behavior_cycle = pacing_jumping_behavior()
         self.behavior_frames = 0
         self.behavior_rate = 1
 
