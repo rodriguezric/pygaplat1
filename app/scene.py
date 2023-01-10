@@ -381,3 +381,128 @@ def show_dialogue(lines: list):
 
         pygame.display.update()
         clock.tick(5)
+
+def level_editor_scene(level_idx=0):
+    from app.enemy import Enemy
+
+    # Enemy sprites
+    enemies = pygame.sprite.Group()
+
+    # Tile sprites
+    from app.tile import Tile, DialogTile, MovingTile, create_colored_tile
+    tiles = pygame.sprite.Group()
+    hazzards = pygame.sprite.Group()
+    goals = pygame.sprite.Group()
+    dialogs = pygame.sprite.Group()
+
+    sprite_groups = [tiles, hazzards, goals, dialogs, enemies]
+
+    import csv
+    with open(level_files[level_idx]) as f:
+        level_dict = {(x, y): v for y, _ in enumerate(tuple(csv.reader(f))) 
+                           for x, v in enumerate(_)}
+
+    tile_dict = {'1': create_colored_tile('white'),}
+    hazzard_dict = {'2': create_colored_tile('firebrick'),}
+    goal_dict = {'D': create_colored_tile('blue'),}
+
+    def read_level_file(level_idx: int) -> dict:
+        import csv
+
+        with open(level_files[level_idx]) as f:
+            level_dict = {(x, y): v for y, _ in enumerate(tuple(csv.reader(f))) 
+                               for x, v in enumerate(_)}
+
+        return level_dict
+
+    def save_level_file(level_idx: int, level_dict: dict):
+        import csv
+
+        L = [['0'] * 16 for _ in range(12)] 
+        for (x, y) , v in level_dict.items():
+            L[y][x] = v
+
+        with open(level_files[level_idx], 'w') as f:
+            level_writer = csv.writer(f)
+            for row in L:
+                level_writer.writerow(row)
+
+    def update_level(level_dict):
+        for sprite_group in sprite_groups:
+            sprite_group.empty() 
+
+        for (x, y), key in level_dict.items():
+            pos = (tile_size * x, tile_size * y)
+            
+            tile_fn = tile_dict.get(key)
+            if tile_fn:
+                tiles.add(tile_fn(pos=pos))
+            
+            hazzard_fn = hazzard_dict.get(key)
+            if hazzard_fn:
+                hazzards.add(hazzard_fn(pos=pos))
+             
+            goal_fn = goal_dict.get(key)
+            if goal_fn: goals.add(goal_fn(pos=pos))
+            
+            if key.startswith('E'):
+                _, text_id = key.split(':')
+                dialogs.add(DialogTile(text_id=text_id,
+                                       color='yellow', 
+                                       pos=pos,))
+
+            if key == 'M':
+                enemies.add(Enemy(pos=pos))
+
+    level_dict = read_level_file(level_idx)
+    update_level(level_dict)
+    tile_value = '1'
+    tile_keys = [pygame.K_1,
+                 pygame.K_2,
+                 pygame.K_3,
+                 pygame.K_4]
+    tile_lookup_dict = dict(zip(tile_keys, "12DM"))
+
+    def paint_tile(pos, tile_value):
+        print(pos, tile_value)
+        x, y = pos
+        
+        # if in editable area
+        if tile_size < x < tile_size * 15 and \
+           tile_size < y < tile_size * 11:
+            i = x // tile_size
+            j = y // tile_size
+            level_dict[(i, j)] = tile_value
+            update_level(level_dict)
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            handle_quit_event(event)
+
+            if event.type == KEYDOWN and event.key in tile_keys:
+                tile_value = tile_lookup_dict.get(event.key)
+
+            if event.type == KEYDOWN and event.key == pygame.K_s:
+                save_level_file(level_idx=level_idx, 
+                                level_dict=level_dict)
+
+        screen.fill('black')
+
+        tiles.draw(screen)
+        enemies.draw(screen)
+        hazzards.draw(screen)
+        goals.draw(screen)
+        dialogs.draw(screen)
+
+        # right click
+        if pygame.mouse.get_pressed() == (0, 0, 1):
+            paint_tile(pos=pygame.mouse.get_pos(), 
+                        tile_value='0')
+
+        if pygame.mouse.get_pressed() == (1, 0, 0):
+            paint_tile(pos=pygame.mouse.get_pos(), 
+                        tile_value=tile_value)
+
+        pygame.display.update()
+        clock.tick(60)
