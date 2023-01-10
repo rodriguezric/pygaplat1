@@ -7,6 +7,7 @@ from app.mixins import (ActorStateMixin,
                         PhysicsMixin,)
 
 from app.behavior import pacing_behavior, pacing_jumping_behavior
+from random import randint
 
 class Enemy(pygame.sprite.Sprite,
              ActorStateMixin,
@@ -29,6 +30,7 @@ class Enemy(pygame.sprite.Sprite,
         self.speed = 2
         self.behavior = None
         self.behavior_cycle = pacing_jumping_behavior()
+        for _ in range(randint(0, 10)): next(self.behavior_cycle)
         self.behavior_frames = 0
         self.behavior_rate = 1
 
@@ -37,8 +39,8 @@ class Enemy(pygame.sprite.Sprite,
         self.apply_friction()
 
         if self.behavior_cycle:
-            self.behavior_frames += 1
-            if self.behavior_frames % 30 == 0:
+            self.behavior_frames += self.behavior_rate 
+            if int(self.behavior_frames % 30) == 0:
                 self.behavior = next(self.behavior_cycle)
                 self.behavior_frames = 0
 
