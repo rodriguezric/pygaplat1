@@ -456,22 +456,24 @@ def level_editor_scene(level_idx=0):
 
     level_dict = read_level_file(level_idx)
     update_level(level_dict)
+
+
+    tile_value_text = Text('TILE: ')
     tile_value = '1'
     tile_keys = [pygame.K_1,
                  pygame.K_2,
                  pygame.K_3,
-                 pygame.K_4]
-    tile_lookup_dict = dict(zip(tile_keys, "12DM"))
+                 pygame.K_4,
+                 pygame.K_5]
+    tile_lookup_dict = dict(zip(tile_keys, list("12DM") + ["E:0"]))
 
     def paint_tile(pos, tile_value):
-        print(pos, tile_value)
         x, y = pos
+        i = x // tile_size
+        j = y // tile_size
         
         # if in editable area
-        if tile_size < x < tile_size * 15 and \
-           tile_size < y < tile_size * 11:
-            i = x // tile_size
-            j = y // tile_size
+        if 1 < i < 15 and 1 < j < 11:
             level_dict[(i, j)] = tile_value
             update_level(level_dict)
 
@@ -480,10 +482,13 @@ def level_editor_scene(level_idx=0):
         for event in pygame.event.get():
             handle_quit_event(event)
 
-            if event.type == KEYDOWN and event.key in tile_keys:
+            if not event.type == KEYDOWN:
+                continue
+
+            if event.key in tile_keys:
                 tile_value = tile_lookup_dict.get(event.key)
 
-            if event.type == KEYDOWN and event.key == pygame.K_s:
+            if event.key == pygame.K_s:
                 save_level_file(level_idx=level_idx, 
                                 level_dict=level_dict)
 
@@ -503,6 +508,10 @@ def level_editor_scene(level_idx=0):
         if pygame.mouse.get_pressed() == (1, 0, 0):
             paint_tile(pos=pygame.mouse.get_pos(), 
                         tile_value=tile_value)
+
+        draw_text(tile_value_text, 
+                  x=tile_size, 
+                  y=tile_size * 13)
 
         pygame.display.update()
         clock.tick(60)
