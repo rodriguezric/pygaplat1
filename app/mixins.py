@@ -33,7 +33,7 @@ class PhysicsMixin:
 
 class ActorStateMixin:
     def init_state_attributes(self):
-        self.state = ActorState.STANDING
+        self.state = ActorState.FALLING
 
     def handle_standing_state(self):
         if self.movement.y > self.gravity:
