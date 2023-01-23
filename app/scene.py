@@ -407,6 +407,17 @@ def level_editor_scene(level_idx=0):
     goal_dict = {'D': create_colored_tile('blue'),}
 
     def read_level_file(level_idx: int) -> dict:
+        '''
+        Opens levels/{level_idx}.csv and converts it to a dictionary
+
+        The dictionary has coordinate tuples (x, y) for keys and encoded
+        values for the values. The values represent the game entities:
+            - Tiles
+            - Enemies
+            - Messages
+            - Doors
+        '''
+
         import csv
 
         with open(level_files[level_idx]) as f:
@@ -416,6 +427,9 @@ def level_editor_scene(level_idx=0):
         return level_dict
 
     def save_level_file(level_idx: int, level_dict: dict):
+        '''
+        Saves dictionary information as csv to levels/{level_idx}.csv
+        '''
         import csv
 
         L = [['0'] * 16 for _ in range(12)] 
@@ -428,6 +442,9 @@ def level_editor_scene(level_idx=0):
                 level_writer.writerow(row)
 
     def update_level(level_dict):
+        '''
+        Redraws the entire level
+        '''
         for sprite_group in sprite_groups:
             sprite_group.empty() 
 
@@ -459,6 +476,10 @@ def level_editor_scene(level_idx=0):
 
 
     tile_value_text = Text('TILE: ')
+
+    # These keys represent what we want to paint on the level
+    # Note that "E" has ":0" appended to it to default to the
+    # messages/0.txt
     tile_value = '1'
     tile_keys = [pygame.K_1,
                  pygame.K_2,
@@ -473,7 +494,7 @@ def level_editor_scene(level_idx=0):
         j = y // tile_size
         
         # if in editable area
-        if 1 < i < 15 and 1 < j < 11:
+        if 0 < i < 15 and 0 < j < 11:
             level_dict[(i, j)] = tile_value
             update_level(level_dict)
 
@@ -505,9 +526,13 @@ def level_editor_scene(level_idx=0):
             paint_tile(pos=pygame.mouse.get_pos(), 
                         tile_value='0')
 
+        # left click
         if pygame.mouse.get_pressed() == (1, 0, 0):
             paint_tile(pos=pygame.mouse.get_pos(), 
                         tile_value=tile_value)
+
+        if pygame.mouse.get_pressed() == (0, 1, 0):
+            """ middle click stuff """ 
 
         draw_text(tile_value_text, 
                   x=tile_size, 
